@@ -10,7 +10,7 @@ const connectDB = async () => {
  }
     );
 
-    console.log(`MongoBD Connected : ${conn.connection.host}`)
+    console.log(`MongoBD Connected : ${conn.connection.host}`.green.italic)
 }
 
 module.exports = connectDB; 
