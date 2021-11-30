@@ -1,16 +1,14 @@
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 
 const connectDB = async () => {
-    const conn =  await mongoose.connect(process.env.MONGO_URI
-      , {
-      useNewUrlParser : true,
-    //   useCreateIndex : true, 
+  const conn = await mongoose.connect(process.env.MONGO_URI, {
+    useNewUrlParser: true,
+    //   useCreateIndex : true,
     //   useFindAndModify : false,
-      useUnifiedTopology : true
- }
-    );
+    useUnifiedTopology: true,
+  });
 
-    console.log(`MongoBD Connected : ${conn.connection.host}`.green.italic)
-}
+  console.log(`MongoBD Connected : ${conn.connection.host}`.green.italic);
+};
 
-module.exports = connectDB; 
+module.exports = connectDB;
