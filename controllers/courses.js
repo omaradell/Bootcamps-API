@@ -18,13 +18,13 @@ exports.getCourses = asyncHandler(async (req, res, next) => {
   } else {
     res.status(200).json(res.advancedResults);
   }
-  const courses = await query;
+  // const courses = await query;
 
-  res.status(200).json({
-    success: true,
-    count: courses.length,
-    data: courses,
-  });
+  // res.status(200).json({
+  //   success: true,
+  //   count: courses.length,
+  //   data: courses,
+  // });
 });
 
 // Desc Gett single Courses
@@ -51,10 +51,21 @@ exports.getCourse = asyncHandler(async (req, res, next) => {
 // accesss private
 exports.addCourse = asyncHandler(async (req, res, next) => {
   req.body.bootcamp = req.params.bootcampId;
+  req.body.user = req.user.id;
+
   const bootcamp = await Bootcamp.findById(req.params.bootcampId);
   if (!bootcamp) {
     return next(
       new ErrorResponse(`no bootcamp found by id ${req.params.bootcampId}`, 404)
+    );
+  }
+
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `this user ${req.user.id} has no access to add Course this boot camp ${bootcamp.id}`,
+        400
+      )
     );
   }
 
@@ -76,6 +87,15 @@ exports.updateCourse = asyncHandler(async (req, res, next) => {
     );
   }
 
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `this user ${req.user.id} has no access to update Course this boot camp ${bootcamp.id}`,
+        400
+      )
+    );
+  }
+
   course = await Course.findByIdAndUpdate(req.params.id, req.body, {
     new: true,
     runValidators: true,
@@ -94,6 +114,15 @@ exports.deleteCourse = asyncHandler(async (req, res, next) => {
   if (!course) {
     return next(
       new ErrorResponse(`no bootcamp found by id ${req.params.bootcampId}`, 404)
+    );
+  }
+
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `this user ${req.user.id} has no access to delete Course this boot camp ${bootcamp.id}`,
+        400
+      )
     );
   }
 

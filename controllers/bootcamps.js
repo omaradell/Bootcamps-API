@@ -30,6 +30,19 @@ exports.getBootcamp = asyncHandler(async (req, res, next) => {
 // accesss private
 
 exports.createBootcamps = asyncHandler(async (req, res, next) => {
+  //add user to req.body
+  req.body.user = req.user.id;
+  //Check if user added a bootcamp or is and admin
+  const publishedBootcamp = await Bootcamp.findOne({ user: req.user.id });
+
+  if (publishedBootcamp && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `this user has published a boot camp ${req.user.id}`,
+        400
+      )
+    );
+  }
   const bootcamp = await Bootcamp.create(req.body);
   res.status(201).json({
     success: true,
@@ -43,13 +56,22 @@ exports.createBootcamps = asyncHandler(async (req, res, next) => {
 // accesss Private
 
 exports.updateBootcamps = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
-    new: true,
-    runValidators: true,
-  });
+  let bootcamp = await Bootcamp.findById(req.params.id);
   if (!bootcamp) {
     return res.status(404).json({ succes: false, msg: "not found" });
   }
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `this user ${req.user.id} has no access to update this boot camp `,
+        400
+      )
+    );
+  }
+  bootcamp = await Bootcamp.findByIdAndUpdate(req.params.id, req.body, {
+    new: true,
+    runValidators: true,
+  });
   res.status(201).json({
     success: true,
     data: bootcamp,
@@ -63,9 +85,17 @@ exports.updateBootcamps = asyncHandler(async (req, res, next) => {
 // accesss Private
 
 exports.deleteBootcamps = asyncHandler(async (req, res, next) => {
-  const bootcamp = await Bootcamp.findByIdAndDelete(req.params.id);
+  const bootcamp = await Bootcamp.findById(req.params.id);
   if (!bootcamp) {
     return res.status(404).json({ succes: false, msg: "not found" });
+  }
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `this user ${req.user.id} has no access to delete this boot camp `,
+        400
+      )
+    );
   }
   bootcamp.remove();
   res.status(201).json({
@@ -111,6 +141,16 @@ exports.photoUploadBootcamp = asyncHandler(async (req, res, next) => {
   if (!bootcamp) {
     return res.status(404).json({ succes: false, msg: "not found" });
   }
+
+  if (bootcamp.user.toString() !== req.user.id && req.user.role !== "admin") {
+    return next(
+      new ErrorResponse(
+        `this user ${req.user.id} has no access to update this boot camp `,
+        400
+      )
+    );
+  }
+
   if (!req.files) {
     return next(new ErrorResponse("please upload file"), 400);
   }
@@ -144,11 +184,4 @@ exports.photoUploadBootcamp = asyncHandler(async (req, res, next) => {
     });
   });
   console.log(file.name);
-  //   res.status(201).json({
-  //   success: true,
-  //   data: {},
-  //   msg: "bootcamp deleted ",
-  // });
-
-  // res.json({success : true , msg :`delete booot of ${req.params.id}` })
 });
